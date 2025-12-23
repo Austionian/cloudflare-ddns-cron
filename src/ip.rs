@@ -1,7 +1,6 @@
 use crate::CLIENT;
 use tracing::instrument;
 
-#[derive(Debug)]
 pub struct Ip {
     pub addr: String,
 }

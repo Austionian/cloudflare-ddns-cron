@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - name: cloudflare-ddns
-              image: 10.108.202.38:5000/cloudflare-ddns:0.2.1
+              image: 10.108.202.38:5000/cloudflare-ddns:0.2.2
               env:
                 - name: CLOUDFLARE_API_TOKEN
                   valueFrom:

@@ -1,31 +1,31 @@
 use crate::{CLIENT, Ip, get_api_token};
 use anyhow::{Context, anyhow};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 struct CloudflareResponse {
     result: Option<Vec<CloudflareRecord>>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 struct CloudflarePatchResponse {
     errors: Vec<CloudflareMessage>,
     success: bool,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 struct CloudflareRecord {
     content: Option<String>,
     id: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 struct CloudflareMessage {
     message: String,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Serialize)]
 struct PatchBody {
     r#type: &'static str,
     name: &'static str,
