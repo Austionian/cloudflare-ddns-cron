@@ -1,10 +1,11 @@
+---
 # Cron job to keep website A records to point at my current IP address
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: cloudflare-ddns-cron
 spec:
-  schedule: "*/3 * * * *"
+  schedule: "*/5 * * * *"
   jobTemplate:
     spec:
       backoffLimit: 5
@@ -13,7 +14,7 @@ spec:
         spec:
           containers:
             - name: cloudflare-ddns
-              image: 10.108.202.38:5000/cloudflare-ddns:0.0.0
+              image: 10.108.202.38:5000/cloudflare-ddns:0.2.1
               env:
                 - name: CLOUDFLARE_API_TOKEN
                   valueFrom:

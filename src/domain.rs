@@ -1,5 +1,5 @@
-use crate::{get_api_token, Ip, CLIENT};
-use anyhow::{anyhow, Context};
+use crate::{CLIENT, Ip, get_api_token};
+use anyhow::{Context, anyhow};
 use serde::Deserialize;
 use tracing::instrument;
 
@@ -69,7 +69,7 @@ impl Domain {
     async fn is_same(&mut self, ip: &Ip) -> anyhow::Result<bool> {
         match CLIENT
             .get(self.get_get_url())
-            .bearer_auth(get_api_token!())
+            .bearer_auth(get_api_token!()?)
             .send()
             .await
             .context("Failed to GET request to Cloudflare")?
@@ -89,7 +89,7 @@ impl Domain {
 
                         // Look at the content of the record and compare with ip.
                         record.content.as_ref().map(|content| {
-                            tracing::info!("ip is {}, matched -> {}", content, *content == ip.addr);
+                            tracing::info!("A record's IP is {}", content,);
                             Ok(*content == ip.addr)
                         })
                     })
@@ -110,7 +110,7 @@ impl Domain {
             // Update the dns record
             match CLIENT
                 .patch(&self.get_patch_url().ok_or(anyhow!("no record id found"))?)
-                .bearer_auth(get_api_token!())
+                .bearer_auth(get_api_token!()?)
                 .json(&PatchBody {
                     r#type: "A",
                     name: "@", // A record should be set to root

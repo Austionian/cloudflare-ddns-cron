@@ -9,9 +9,9 @@ use std::sync::LazyLock;
 
 #[macro_export]
 macro_rules! get_env {
-    ($key:expr) => {
-        std::env::var($key).map_err(|err| anyhow!("getting {}: {err}", $key))?
-    };
+    ($key:expr) => {{
+        std::env::var($key).map_err(|err| anyhow!("getting {}: {err}", $key))
+    }};
 }
 
 #[macro_export]
@@ -30,11 +30,11 @@ async fn main() -> anyhow::Result<()> {
 
     let ip = Ip::get().await?;
 
-    tracing::info!(ip = ip.addr.trim(), "ip obtained");
+    tracing::info!(ip = ip.addr, "ip obtained");
 
-    let mut gathering_surf = Domain::new(get_env!("GATHERING_SURF_ZONE_ID"), "gathering.surf");
+    let mut gathering_surf = Domain::new(get_env!("GATHERING_SURF_ZONE_ID")?, "gathering.surf");
     let mut peach_software = Domain::new(
-        get_env!("PEACH_SOFTWARE_ZONE_ID"),
+        get_env!("PEACH_SOFTWARE_ZONE_ID")?,
         "thepeachsoftware.company",
     );
 
