@@ -1,0 +1,33 @@
+# Cron job to keep website A records to point at my current IP address
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cloudflare-ddns-cron
+spec:
+  schedule: "*/3 * * * *"
+  jobTemplate:
+    spec:
+      backoffLimit: 5
+      ttlSecondsAfterFinished: 300
+      template:
+        spec:
+          containers:
+            - name: cloudflare-ddns
+              image: 10.108.202.38:5000/cloudflare-ddns:0.0.0
+              env:
+                - name: CLOUDFLARE_API_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: cloudflare-ddns-cron-api-token
+                      key: api-token
+                - name: PEACH_SOFTWARE_ZONE_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: peach-software-zone-id
+                      key: id
+                - name: GATHERING_SURF_ZONE_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: gathering-surf-zone-id
+                      key: id
+          restartPolicy: OnFailure
