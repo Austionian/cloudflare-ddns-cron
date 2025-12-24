@@ -1,5 +1,5 @@
-use crate::{CLIENT, Ip, get_api_token};
-use anyhow::{Context, anyhow};
+use crate::{get_api_token, Ip, CLIENT};
+use anyhow::{anyhow, Context};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
@@ -36,14 +36,14 @@ struct PatchBody {
 pub struct Domain {
     zone_id: String,
     record_id: Option<String>,
-    domain: &'static str,
+    url: &'static str,
 }
 
 impl Domain {
-    pub fn new(zone_id: String, domain: &'static str) -> Self {
+    pub fn new(zone_id: String, url: &'static str) -> Self {
         Self {
             zone_id,
-            domain,
+            url,
             record_id: None,
         }
     }
@@ -89,23 +89,26 @@ impl Domain {
 
                         // Look at the content of the record and compare with ip.
                         record.content.as_ref().map(|content| {
-                            tracing::info!("A record's IP is {}", content,);
+                            tracing::info!("'A' record's IP is {}", content,);
                             Ok(*content == ip.addr)
                         })
                     })
                     .ok_or(anyhow!("No record found"))?
                     .ok_or(anyhow!("Empty record"))?
             }
-            Err(error) => anyhow::bail!("Unable to retrive record: {}", error),
+            Err(error) => anyhow::bail!("Unable to retrive record: {error}"),
         }
     }
 
     /// Checks if the existing A record's ip address matches the ip that's given to the function.
     /// If it doesn't match, updates the A record to what was given.
-    #[instrument(name = "Domain::ddns", skip(self, ip), fields(domain = %self.domain))]
+    #[instrument(name = "Domain::ddns", skip(self, ip), fields(domain = %self.url))]
     pub async fn ddns(&mut self, ip: &Ip) -> anyhow::Result<()> {
-        if !self.is_same(ip).await? {
-            tracing::info!("Updating {}'s record to {}", self.domain, ip.addr);
+        if self.is_same(ip).await? {
+            tracing::info!("Records matched.");
+            Ok(())
+        } else {
+            tracing::info!("Updating {}'s record to {}", self.url, ip.addr);
 
             // Update the dns record
             match CLIENT
@@ -124,25 +127,22 @@ impl Domain {
             {
                 Ok(response) => {
                     let response = response.json::<CloudflarePatchResponse>().await?;
-                    if !response.success {
+                    if response.success {
+                        tracing::info!("Updated {}'s record to {}", self.url, ip.addr);
+                        Ok(())
+                    } else {
                         let error = response
                             .errors
                             .iter()
                             .map(|err| err.message.clone())
                             .collect::<String>();
 
-                        tracing::error!("Failed to update {}: {}", self.domain, error);
-                        anyhow::bail!("Failed to update {}", self.domain)
-                    } else {
-                        tracing::info!("Updated {}'s record to {}", self.domain, ip.addr);
-                        Ok(())
+                        tracing::error!("Failed to update {}: {}", self.url, error);
+                        anyhow::bail!("Failed to update {}", self.url)
                     }
                 }
-                Err(error) => anyhow::bail!("Failed to update {}: {}", self.domain, error),
+                Err(error) => anyhow::bail!("Failed to update {}: {}", self.url, error),
             }
-        } else {
-            tracing::info!("Records matched.");
-            Ok(())
         }
     }
 }

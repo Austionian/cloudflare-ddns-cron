@@ -2,8 +2,8 @@ mod domain;
 mod ip;
 
 use anyhow::anyhow;
-use domain::*;
-use ip::*;
+use domain::Domain;
+use ip::Ip;
 use reqwest::{self, Client};
 use std::sync::LazyLock;
 
@@ -44,10 +44,12 @@ async fn main() -> anyhow::Result<()> {
     }
     .into();
 
-    results.iter().for_each(|result| match result {
-        Ok(_) => (),
-        Err(err) => tracing::error!("{err}"),
-    });
+    for result in results {
+        match result {
+            Ok(()) => (),
+            Err(err) => tracing::error!("{err}"),
+        }
+    }
 
     Ok(())
 }
