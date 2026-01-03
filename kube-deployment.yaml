@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - name: cloudflare-ddns
-              image: 10.108.202.38:5000/cloudflare-ddns:0.2.3
+              image: 10.108.202.38:5000/cloudflare-ddns:0.3.0
               env:
                 - name: CLOUDFLARE_API_TOKEN
                   valueFrom:
@@ -30,5 +30,10 @@ spec:
                   valueFrom:
                     secretKeyRef:
                       name: gathering-surf-zone-id
+                      key: id
+                - name: BL0G_ZONE_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: bl0g-zone-id
                       key: id
           restartPolicy: OnFailure

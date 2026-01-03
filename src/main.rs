@@ -37,10 +37,12 @@ async fn main() -> anyhow::Result<()> {
         get_env!("PEACH_SOFTWARE_ZONE_ID")?,
         "thepeachsoftware.company",
     );
+    let mut bl0g = Domain::new(get_env!("BL0G_ZONE_ID")?, "r00ks.io");
 
-    let results: [anyhow::Result<(), anyhow::Error>; 2] = tokio::join! {
+    let results: [anyhow::Result<(), anyhow::Error>; 3] = tokio::join! {
         gathering_surf.ddns(&ip),
         peach_software.ddns(&ip),
+        bl0g.ddns(&ip),
     }
     .into();
 
