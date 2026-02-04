@@ -1,5 +1,5 @@
-use crate::{get_api_token, Ip, CLIENT};
-use anyhow::{anyhow, Context};
+use crate::{CLIENT, Ip, get_api_token};
+use anyhow::{Context, anyhow};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
